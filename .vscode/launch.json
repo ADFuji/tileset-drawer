@@ -1,12 +1,12 @@
 {
-    "configurations": [
-        {
-            "type": "java",
-            "name": "Launch App",
-            "request": "launch",
-            "mainClass": "App",
-            "projectName": "Tileset-Drawer_ef7f3a6a",
-            "vmArgs": "--module-path \"./JavaFX/lib\" --add-modules javafx.controls,javafx.fxml"
-        }
-    ]
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Launch App",
+      "request": "launch",
+      "mainClass": "App",
+      "projectName": "tileset-drawer_1a7df1ce",
+      "vmArgs": "--module-path \"./JavaFX/lib\" --add-modules javafx.controls,javafx.fxml"
+    }
+  ]
 }
