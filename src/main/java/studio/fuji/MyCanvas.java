@@ -2,131 +2,130 @@ package studio.fuji;
 
 import java.io.Console;
 import java.util.Vector;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 
 public class MyCanvas extends javafx.scene.Parent {
-    private GridPane gridPane;
+    private VBox vhBox;
     private int width;
     private int height;
-    private int scale;
-    private Vector<StackPane> pixels;
-    private boolean canDraw;
-    private String color;
+    private double scale;
+    private Vector<MyPixel> pixels;
+    private Color color;
+    static int count=0;
 
-    public MyCanvas(int width, int height) {
+    public MyCanvas(int width, int height){
+        count=0;
         this.width = width;
         this.height = height;
-        this.gridPane = new GridPane();
-        this.pixels = new Vector<StackPane>();
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                StackPane pixel = new StackPane();
-                pixel.setPrefSize(1, 1);
-                pixel.setStyle("-fx-background-color: #000000");
+        this.scale = 10;
+        this.pixels = new Vector<MyPixel>();
+        this.color = new Color(0, 0, 0);
+        this.vhBox = new VBox();
+        for(int i=0; i<height; i++){
+            HBox hBox = new HBox();
+            for(int j=0; j<width; j++){
+                MyPixel pixel = new MyPixel(this.color);
+                pixel.setSize(this.scale);
                 this.pixels.add(pixel);
+                hBox.getChildren().add(pixel);
             }
+            this.vhBox.getChildren().add(hBox);
         }
-        for (int i = 0; i < this.pixels.size(); i++) {
-            this.gridPane.add(this.pixels.get(i), i % width, i / width);
+        color = new Color(255, 255, 255);
+        this.setOnMouseClicked(event->{
+            //if it's on a pixel
+            if(event.getX() < this.width * this.scale && event.getY() < this.height * this.scale) {
+                int x = (int)(event.getX() / this.scale);
+                int y = (int)(event.getY() / this.scale);
+                int index = x + y * this.width;
+                MyPixel pixel = this.pixels.get(index);
+                pixel.setColor(this.color);
+                count++;
+                update();
+            }
+        });
+        this.setOnMouseDragged(e->{
+            if(e.getX() < this.width * this.scale && e.getY() < this.height * this.scale) {
+                int x = (int)(e.getX() / this.scale);
+                int y = (int)(e.getY() / this.scale);
+                int index = x + y * this.width;
+                MyPixel pixel = this.pixels.get(index);
+                pixel.setColor(this.color);
+                count++;
+                update();
+            }
+        });
+        this.getChildren().add(this.vhBox);
+        
+        
+    }
+    public void update(){
+        switch(count){
+            case 0:
+                this.color = new Color(0, 0, 0);
+                break;
+            case 1:
+                this.color = new Color(255, 255, 255);
+                break;
+            case 2:
+                this.color = new Color(255, 0, 0);
+                break;
+            case 3:
+                this.color = new Color(0, 255, 0);
+                break;
+            case 4:
+                this.color = new Color(0, 0, 255);
+                break;
+            case 5:
+                this.color = new Color(255, 255, 0);
+                break;
+            case 6:
+                this.color = new Color(0, 255, 255);
+                break;
+            case 7:
+                this.color = new Color(255, 0, 255);
+                count=0;
+                break;
+            default:
+                this.color = new Color(0, 0, 0);
+                break;
         }
-        color = "#000000";
-
-        gridPane.setGridLinesVisible(true);
-        gridPane.setOnMouseClicked(event -> {
-            int x = (int) event.getX();
-            int y = (int) event.getY();
-            drawPixel(x, y, color);
-        });
-        gridPane.setOnMouseDragged(event -> {
-            int x = (int) event.getX();
-            int y = (int) event.getY();
-            drawPixel(x, y, color);
-        });
-        gridPane.setOnMouseEntered(event -> {
-            this.canDraw = true;
-        });
-        gridPane.setOnMouseExited(event -> {
-            this.canDraw = false;
-        });
-        this.getChildren().add(gridPane);
     }
-
-    public void setColor(String color) {
-        this.color = color;
-    }
-
-    public Vector<StackPane> getPixels() {
-        return this.pixels;
-    }
-
-    public StackPane getPixel(int index) {
-        return (StackPane) this.pixels.get(index);
-    }
-
-    public void changeScale(int scale) {
-        this.scale = scale;
-        for (int i = 0; i < this.pixels.size(); i++) {
-            this.pixels.get(i).setPrefSize(scale, scale);
+    public void setSize(double n){
+        this.scale = n;
+        System.out.println(this.scale);
+        for(int i = 0; i < this.pixels.size(); i++) {
+            this.pixels.get(i).setSize(n);
         }
     }
-
-    private void drawPixel(int x, int y, String color) {
-        int index = (y / this.scale) * this.width + (x / this.scale);
-        getPixel(index).setStyle("-fx-background-color:" + color);
+    public MyPixel getPixel(int index){
+        return this.pixels.get(index);
     }
-
-    public int getWidth() {
+    public void setPixel(int index){
+        this.pixels.get(index).setColor(this.color);
+    }
+    public BufferedImage getImage(){
+        BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
+        for(int i = 0; i < this.pixels.size(); i++) {
+            image.setRGB(i % this.width, i / this.width, this.pixels.get(i).getRGB());
+        }
+        try{
+            javax.imageio.ImageIO.write(image, "png", new java.io.File("image" + count + ".png"));
+        }
+        catch(Exception e){
+            System.out.println("Error: " + e);
+        }
+        count++;
+        return image;
+    }
+    public int getWidth(){
         return this.width;
     }
-
-    public int getHeight() {
+    public int getHeight(){
         return this.height;
-    }
-
-    public int getScale() {
-        return this.scale;
-    }
-
-    public BufferedImage getImage() {
-        BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_ARGB);
-        for (int i = 0; i < this.width; i++) {
-            for (int j = 0; j < this.height; j++) {
-                int index = j * this.width + i;
-                String style = pixels.get(index).getStyle();
-                System.out.println(style);
-                switch (style) {
-                    case "-fx-background-color: #000000":
-                        image.setRGB(i, j, 0x000000);
-                        break;
-                    case "-fx-background-color: #FFFFFF":
-                        image.setRGB(i, j, 0xFFFFFF);
-                        break;
-                    case "-fx-background-color: #FF0000":
-                        image.setRGB(i, j, 0xFF0000);
-                        break;
-                    case "-fx-background-color: #00FF00":
-                        image.setRGB(i, j, 0x00FF00);
-                        break;
-                    case "-fx-background-color: #0000FF":
-                        image.setRGB(i, j, 0x0000FF);
-                        break;
-                    case "-fx-background-color: #FFFF00":
-                        image.setRGB(i, j, 0xFFFF00);
-                        break;
-                    case "-fx-background-color: #00FFFF":
-                        image.setRGB(i, j, 0x00FFFF);
-                        break;
-                    case "-fx-background-color: #FF00FF":
-                        image.setRGB(i, j, 0xFF00FF);
-                        break;
-                    default:
-                        image.setRGB(i, j, 0x000000);
-                        break;
-                }
-            }
-        }
-        return image;
     }
 }

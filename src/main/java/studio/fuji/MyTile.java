@@ -31,13 +31,14 @@ public class MyTile extends javafx.scene.Parent {
     public BufferedImage getImage() {
         return this.canvas.getImage();
     }
-
-    public void saveAs(String path) {
-        try {
-            javax.imageio.ImageIO.write(this.getImage(), "png", new java.io.File(path));
-        } catch (Exception e) {
-            System.out.println("Error: " + e);
-        }
+    public int getTid() {
+        return this.tid;
+    }
+    public int getWidth() {
+        return this.canvas.getWidth();
+    }
+    public int getHeight() {
+        return this.canvas.getHeight();
     }
 
 }
