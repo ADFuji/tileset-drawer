@@ -1,20 +1,25 @@
 package studio.fuji;
 
 import javafx.scene.layout.StackPane;
+import java.awt.Color;
 
 public class MyPixel extends javafx.scene.Parent{
+    private static boolean isDraw = false;
+
     private javafx.scene.layout.StackPane pixel;
-    private java.awt.Color color;
-    public MyPixel(java.awt.Color color) {
+    private Color color;
+    public MyPixel(Color color) {
         this.color = color;
         this.pixel = new StackPane();
-        this.pixel.setStyle(String.format("-fx-background-color: rgb(%d, %d, %d);", color.getRed(), color.getGreen(), color.getBlue()));
+        this.pixel.setStyle(String.format("-fx-background-insets: 0, 0;-fx-background-color: rgba(%d, %d, %d, %d);", color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()));
         this.pixel.setPrefSize(1, 1);
+        
         this.getChildren().add(this.pixel);
+
     }
     public void setColor(java.awt.Color color) {
         this.color = color;
-        this.pixel.setStyle(String.format("-fx-background-color: rgb(%d, %d, %d);", color.getRed(), color.getGreen(), color.getBlue()));
+        this.pixel.setStyle(String.format("-fx-background-insets: 0, 0;;-fx-background-color: rgba(%d, %d, %d, %d);", color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()));
     }
     public java.awt.Color getColor() {
         return this.color;

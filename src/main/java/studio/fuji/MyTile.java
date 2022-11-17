@@ -31,6 +31,14 @@ public class MyTile extends javafx.scene.Parent {
     public BufferedImage getImage() {
         return this.canvas.getImage();
     }
+    public void saveAsPng(String path) {
+        try{
+            javax.imageio.ImageIO.write(this.getImage(), "png", new java.io.File(path));
+        }
+        catch(Exception e) {
+            System.out.println(e);
+        }
+    }
     public int getTid() {
         return this.tid;
     }

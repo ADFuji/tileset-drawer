@@ -13,8 +13,8 @@ public class MyCanvas extends javafx.scene.Parent {
     private int width;
     private int height;
     private double scale;
-    private Vector<MyPixel> pixels;
-    private Color color;
+    private Vector<Vector<MyPixel>> pixels;
+    public static Color color = new Color(255,255,255);
     static int count=0;
 
     public MyCanvas(int width, int height){
@@ -22,76 +22,63 @@ public class MyCanvas extends javafx.scene.Parent {
         this.width = width;
         this.height = height;
         this.scale = 10;
-        this.pixels = new Vector<MyPixel>();
-        this.color = new Color(0, 0, 0);
+        this.pixels = new Vector<Vector<MyPixel>>();
+
         this.vhBox = new VBox();
         for(int i=0; i<height; i++){
             HBox hBox = new HBox();
+            //make hBox border visible
+
+            this.pixels.add(new Vector<MyPixel>());
             for(int j=0; j<width; j++){
-                MyPixel pixel = new MyPixel(this.color);
+                MyPixel pixel = new MyPixel(new Color(255,255,255,255));
                 pixel.setSize(this.scale);
-                this.pixels.add(pixel);
+                this.pixels.get(i).add(pixel);
                 hBox.getChildren().add(pixel);
             }
             this.vhBox.getChildren().add(hBox);
         }
-        color = new Color(255, 255, 255);
-        this.setOnMouseClicked(event->{
-            //if it's on a pixel
-            if(event.getX() < this.width * this.scale && event.getY() < this.height * this.scale) {
-                int x = (int)(event.getX() / this.scale);
-                int y = (int)(event.getY() / this.scale);
-                int index = x + y * this.width;
-                MyPixel pixel = this.pixels.get(index);
-                pixel.setColor(this.color);
-                count++;
-                update();
-            }
+        this.setOnMousePressed(e->{
+            System.out.println(e);
+            e.getPickResult().getIntersectedNode().setStyle(String.format("-fx-background-insets: 0, 0;-fx-background-color: rgb(%d, %d, %d);", color.getRed(), color.getGreen(), color.getBlue()));
         });
         this.setOnMouseDragged(e->{
-            if(e.getX() < this.width * this.scale && e.getY() < this.height * this.scale) {
-                int x = (int)(e.getX() / this.scale);
-                int y = (int)(e.getY() / this.scale);
-                int index = x + y * this.width;
-                MyPixel pixel = this.pixels.get(index);
-                pixel.setColor(this.color);
-                count++;
-                update();
-            }
+            int x = (int)e.getX()/(int)scale;
+            int y = (int)e.getY()/(int)scale;
+            getPixel(x,y).setColor(color);
         });
+        this.setStyle("-fx-background-insets: 0, 0;");
         this.getChildren().add(this.vhBox);
-        
-        
     }
     public void update(){
         switch(count){
             case 0:
-                this.color = new Color(0, 0, 0);
+                MyCanvas.color = new Color(0, 0, 0);
                 break;
             case 1:
-                this.color = new Color(255, 255, 255);
+                MyCanvas.color = new Color(255, 255, 255);
                 break;
             case 2:
-                this.color = new Color(255, 0, 0);
+                MyCanvas.color = new Color(255, 0, 0);
                 break;
             case 3:
-                this.color = new Color(0, 255, 0);
+                MyCanvas.color = new Color(0, 255, 0);
                 break;
             case 4:
-                this.color = new Color(0, 0, 255);
+                MyCanvas.color = new Color(0, 0, 255);
                 break;
             case 5:
-                this.color = new Color(255, 255, 0);
+                MyCanvas.color = new Color(255, 255, 0);
                 break;
             case 6:
-                this.color = new Color(0, 255, 255);
+                MyCanvas.color = new Color(0, 255, 255);
                 break;
             case 7:
-                this.color = new Color(255, 0, 255);
+                MyCanvas.color = new Color(255, 0, 255);
                 count=0;
                 break;
             default:
-                this.color = new Color(0, 0, 0);
+                MyCanvas.color = new Color(0, 0, 0);
                 break;
         }
     }
@@ -99,19 +86,47 @@ public class MyCanvas extends javafx.scene.Parent {
         this.scale = n;
         System.out.println(this.scale);
         for(int i = 0; i < this.pixels.size(); i++) {
-            this.pixels.get(i).setSize(n);
+            for(int j=0; j<this.pixels.get(i).size(); j++){
+                getPixel(i,j).setSize(n);
+            }
         }
     }
+
+    public MyPixel getPixel(int x, int y){
+        return this.pixels.get(y).get(x);
+    }
     public MyPixel getPixel(int index){
-        return this.pixels.get(index);
+        int count = 0;
+        for(int x=0;x<this.height;x++){
+            for(int y=0;y<this.width;y++){
+                count++;
+                if(count==index){
+                    return getPixel(x,y);
+                }
+            }
+        }
+        return null;
     }
     public void setPixel(int index){
-        this.pixels.get(index).setColor(this.color);
+        getPixel(index).setColor(color);
+    }
+    public void setPixel(int x, int y){
+        getPixel(x,y).setColor(color);
+    }
+    public void setPixel(int x, int y, Color color){
+        getPixel(x,y).setColor(color);
     }
     public BufferedImage getImage(){
-        BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
+        BufferedImage image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_ARGB);
+        for(int i=0; i<this.height; i++){
+            for(int j=0; j<this.width; j++){
+                image.setRGB(j, i, new Color(255,255,255,0).getRGB());
+            }
+        }
         for(int i = 0; i < this.pixels.size(); i++) {
-            image.setRGB(i % this.width, i / this.width, this.pixels.get(i).getRGB());
+            for(int j=0; j<this.pixels.get(i).size(); j++){
+                image.setRGB(j, i, getPixel(i,j).getColor().getRGB());
+            }
         }
         try{
             javax.imageio.ImageIO.write(image, "png", new java.io.File("image" + count + ".png"));
@@ -127,5 +142,8 @@ public class MyCanvas extends javafx.scene.Parent {
     }
     public int getHeight(){
         return this.height;
+    }
+    public static void setColor(Color color){
+        MyCanvas.color = color;
     }
 }
